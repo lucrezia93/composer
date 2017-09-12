@@ -1,0 +1,67 @@
+Automatic loading of generated report in the patient medical records
+
+
+This is an Automatic loading of generated report in the patient medical records based on SSN regulations. Doctors can move new_producted_records (of their patients) between hospitals/departments and the SSN has visibility into the locations of all new_producted_records and all new_producted_record movements between hospitals/ departments.
+
+This network defines:
+
+**Participants**
+`Doctor` `Ssn`
+
+**Assets**
+`New_producted_record` `Hospital_Department` `Patient`
+
+**Transactions**
+`New_producted_recordMovementDeparture` `New_producted_recordMovementArrival` `SetupDemo`
+
+Each Doctor owns a Hospital_Department that is identified by a Single Department Identifier (SDI). A Doctor owns a set of New_producted_records. A Hospital_Department owns a set of Patients. A Patient have a Health Folder that contains a set of New_producted_records owned by the Doctor. New_producted_records can be transferred between doctors or between Hospital_Department.
+
+To test this Network in the **Test** tab:
+
+Submit a `SetupDemo` transaction:
+
+{
+  "$class": "org.acme.SetupDemo"
+}
+
+This transaction populates the Participant Registries with two `Doctor` participants and a `Ssn` participant. The Asset Registries will have eight `New_producted_record` assets, two `Hospital_Department` assets and four `Patient` assets.
+
+
+Before starting, the NEW_PRODUCTED_RECORD_1 is in the status IN_DEPARTMENT
+ 
+
+Submit a `New_producted_recordMovementDeparture` transaction:
+
+{
+  "$class": "org.acme.New_producted_recordMovementDeparture",
+  "fromPatient": "resource:org.acme.Patient#PATIENT_2",
+  "new_producted_record": "resource:org.acme.New_producted_record#NEW_PRODUCTED_RECORD_1",
+  "from": "resource:org.acme.Hospital_Department#HOSPITAL_DEPARTMENT_1",
+  "to": "resource:org.acme.Hospital_Department#HOSPITAL_DEPARTMENT_2"
+}
+
+The transaction New_producted_recordMovementDeparture moves `NEW_PRODUCTED_RECORD_1` from `PATIENT_2` (owened by DOCTOR_2) at `HOSPITAL_DEPARTMENT_1` to `HOSPITAL_DEPARTMENT_2`.
+Let’s imagine that HOSPITAL_DEPARTMENT_2 the is responsible for updating the patient's medical records
+After this transaction the status become LOADING:
+ 
+
+Submit a `New_producted_recordMovementArrival` transaction:
+
+{
+  "$class": "org.acme.New_producted_recordMovementArrival",
+  "arrivalField": "resource:org.acme.Patient#PATIENT_1",
+  "new_producted_record": "resource:org.acme.New_producted_record#NEW_PRODUCTED_RECORD_1",
+  "from": "resource:org.acme.Hospital_Department#HOSPITAL_DEPARTMENT_1",
+  "to": "resource:org.acme.Hospital_Department#HOSPITAL_DEPARTMENT_2"
+}
+ 
+
+This transaction confirms the receipt of `NEW_PRODUCTED_RECORD_1` from `HOSPITAL_DEPARTMENT_1` to `PATIENT_2` at `HOSPITAL_DEPARTMENT_2`.
+
+  
+
+Package
+The package that I realized includes three files:
+- model
+- access rules
+- Script file realized in JavaScript
